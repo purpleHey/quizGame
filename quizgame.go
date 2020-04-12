@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -37,20 +38,39 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	char, _ := reader.ReadString('\n')
 	if len(char) > 0 {
-	}
-	for _, p := range problems {
+
+		// Print the current time
+		fmt.Println(time.Now())
+		timer1 := time.NewTimer(time.Duration(*timeLimit) * time.Second)
+		numAttempted := 0
 
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Printf("%s = ?: ", p.q)
-		text, _ := reader.ReadString('\n')
-		if strings.TrimSuffix(text, "\n") == p.a {
-			fmt.Printf("Correct\n")
-			numCorrect++
-		} else {
-			fmt.Printf("Dooh! Correct answer is %s\n", p.a)
+		for _, p := range problems {
+			fmt.Printf("%s = ?: ", p.q)
+			answerCh := make(chan string)
+			go func() {
+				var answer string
+				answer, _ = reader.ReadString('\n')
+				answerCh <- answer
+			}()
+			select {
+			case <-timer1.C:
+				// Time's up
+				fmt.Println(time.Now())
+				fmt.Printf("\nScore: %d - %d out of %d (%d not attempted)\n",
+					numCorrect/numAttempted*100, numCorrect, numAttempted, len(problems)-numAttempted)
+				return
+			case answer := <-answerCh:
+				numAttempted++
+				if strings.TrimSuffix(answer, "\n") == p.a {
+					fmt.Printf("Correct\n")
+					numCorrect++
+				} else {
+					fmt.Printf("Dooh! Correct answer is %s\n", p.a)
+				}
+			}
 		}
 	}
-	fmt.Printf("Total Num Problems: %d, Total Correct %d\n", len(problems), numCorrect)
 	// fmt.Println("Getting back go...ing with 1.14")
 }
 

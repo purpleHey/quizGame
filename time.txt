@@ -1,0 +1,23 @@
+package foobar
+
+import (
+	"fmt"
+	"time"
+)
+
+func foobar() {
+	start := time.Now()
+	fmt.Println(start)
+
+	for {
+		time.Sleep(2 * time.Second)
+		now := time.Now()
+		elapsed := now.Sub(start).Seconds()
+		if elapsed > 5 {
+			fmt.Printf("%d seconds have passed\n", int(elapsed))
+			break
+		} else {
+			fmt.Println("2 seconds have passed")
+		}
+	}
+}
